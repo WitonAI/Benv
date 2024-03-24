@@ -1,2 +1,5 @@
-FROM scratch
-COPY README.md /README.md
+FROM ubuntu
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
