@@ -10,6 +10,8 @@ SHELL ["/bin/bash", "-c"]
 
 COPY --from=src /src /src
 
+RUN chown -R bitbake:bitbake /src
+
 WORKDIR /src
 
 RUN source oe-init-build-env && \
