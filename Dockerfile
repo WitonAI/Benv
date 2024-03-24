@@ -6,9 +6,11 @@ COPY --from=src /src /src
 
 SHELL ["/bin/bash", "-c"]
 
-RUN source /src/oe-init-build-env && \
+WORKDIR /src
+
+RUN source oe-init-build-env && \
     bitbake core-image-minimal --runall=fetch
 
 FROM alpine as final
 
-COPY --from=build /build/downloads /downloads
+COPY --from=build /src/build/downloads /downloads
