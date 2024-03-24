@@ -4,6 +4,8 @@ FROM witonai/benv:yocto as build
 
 COPY --from=src /src /src
 
+SHELL ["/bin/bash", "-c"]
+
 RUN source /src/oe-init-build-env && \
     bitbake core-image-minimal --runall=fetch
 
