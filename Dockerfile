@@ -1,3 +1,12 @@
-FROM witonai/benv:git
+FROM alpine as base
 
-RUN git clone --depth=1 --recursive -b scarthgap git://git.yoctoproject.org/poky /src
+FROM witonai/benv:yoctoproject-poky-scarthgap-src AS src
+
+FROM witonai/benv:yocto as build
+
+COPY --from=src /src /src
+
+RUN source /src/oe-init-build-env && \
+    bitbake core-image-minimal --runall=fetch
+
+COPY --from=build /build/downloads /downloads
