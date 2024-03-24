@@ -1,0 +1,64 @@
+name: Sync with template repository
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  # cronjob trigger
+  schedule:
+  - cron:  "0 0 1 * *"
+  # manual trigger
+  workflow_dispatch:
+
+jobs:
+  check-wf-sync-pat-secret:
+    runs-on: ubuntu-latest
+    outputs:
+      wf-sync-pat-exists: ${{ steps.wf-sync-pat-check.outputs.defined }}
+    steps:
+      - name: Check for WORKFLOW_SYNC_PAT Secret availability
+        id: wf-sync-pat-check
+        shell: bash
+        run: |
+          if [ "${{ secrets.WORKFLOW_SYNC_PAT }}" != '' ]; then
+            echo "defined=true" >> $GITHUB_OUTPUT;
+          else
+            echo "defined=false" >> $GITHUB_OUTPUT;
+          fi
+
+  repo-sync:
+    runs-on: ubuntu-latest
+    needs: [check-wf-sync-pat-secret]
+    if: needs.check-wf-sync-pat-secret.outputs.wf-sync-pat-exists == 'true'
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Get template repository
+        run: |
+          response=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }})
+          template_repository=$(echo $response | jq -r '.template_repository.full_name // empty')
+          echo "Template repository: $template_repository"
+          echo "template_repository=$template_repository" >> $GITHUB_ENV
+
+      # To use this repository's private action, you must check out the repository
+      - name: Checkout
+        if: env.template_repository != ''
+        uses: actions/checkout@v4
+        # https://github.com/actions/checkout#usage
+        with:
+          # uncomment if you use submodules within the source repository
+          # submodules: true
+          token: ${{ secrets.WORKFLOW_SYNC_PAT }}
+
+      - name: actions-template-sync
+        if: env.template_repository != ''
+        uses: AndreasAugustin/actions-template-sync@v1
+        with:
+          github_token: ${{ secrets.WORKFLOW_SYNC_PAT }}
+          source_repo_path: ${{ env.template_repository }}
+          # upstream_branch: <target_branch> # defaults to main
+          # pr_labels: <label1>,<label2>[,...] # defaults to template_sync
