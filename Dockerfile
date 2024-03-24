@@ -15,7 +15,7 @@ SHELL ["/bin/bash", "-c"]
 WORKDIR /src
 
 RUN source oe-init-build-env && \
-    bitbake core-image-full-cmdline --runall=fetch
+    bitbake core-image-minimal --runall=fetch
 
 FROM alpine as final
 
