@@ -1,5 +1,3 @@
-FROM witonai/benv:ubuntu
+FROM witonai/benv:git
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth=1 --recursive -b scarthgap git://git.yoctoproject.org/poky /src
