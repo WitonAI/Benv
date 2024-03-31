@@ -1,9 +1,11 @@
-FROM ubuntu
-
-ENV DEBIAN_FRONTEND=noninteractive
+FROM witonai/benv:ubuntu
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    locales \
+    openssh-server \
     && rm -rf /var/lib/apt/lists/*
 
-RUN locale-gen en_US.UTF-8
+RUN echo 'root:root' | chpasswd
+
+RUN service ssh start
+
+EXPOSE 22
